@@ -10,24 +10,62 @@
             type="com.udacity.project4.locationreminders.reminderslist.ReminderDataItem" />
     </data>
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
         tools:context=".locationreminders.ReminderDescriptionActivity">
 
-        <!-- TODO: Add the design of the reminder details -->
 
         <TextView
-            android:layout_width="match_parent"
+            android:id="@+id/text_title"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="Reminder Details"
-            android:textSize="@dimen/text_size_large"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_margin="16dp"
+            android:text="@{@string/notification_title(reminderDataItem.title)}"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </LinearLayout>
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Title" />
+
+        <TextView
+            android:id="@+id/text_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:layout_marginStart="16dp"
+            android:text="@{@string/notification_title(reminderDataItem.title)}"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:layout_editor_absoluteY="94dp"
+            tools:text="Description" />
+
+        <TextView
+            android:id="@+id/text_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:layout_marginStart="20dp"
+            android:text="@{@string/notification_title(reminderDataItem.title)}"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:layout_editor_absoluteY="166dp"
+            tools:text="Loc" />
+
+        <TextView
+            android:id="@+id/text_latLng"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:layout_marginStart="16dp"
+            android:text="@{@string/notification_title(reminderDataItem.title)}"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:layout_editor_absoluteY="257dp"
+            tools:text="LatLng" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="top" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
