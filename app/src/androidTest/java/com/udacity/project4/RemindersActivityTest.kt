@@ -1,18 +1,37 @@
 package com.udacity.project4
 
 import android.app.Application
+import android.view.View
+import androidx.recyclerview.widget.RecyclerView
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
+import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
+import androidx.test.espresso.UiController
+import androidx.test.espresso.ViewAction
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.longClick
+import androidx.test.espresso.action.ViewActions.replaceText
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.contrib.RecyclerViewActions
+import androidx.test.espresso.matcher.ViewMatchers
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isRoot
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.util.DataBindingIdlingResource
+import com.udacity.project4.util.monitorActivity
 import com.udacity.project4.utils.EspressoIdlingResource
 import kotlinx.coroutines.runBlocking
+import org.hamcrest.Matcher
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -23,6 +42,7 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.koin.test.get
+
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -72,7 +92,10 @@ class RemindersActivityTest :
                     get() as ReminderDataSource
                 )
             }
-            single { RemindersLocalRepository(get()) as ReminderDataSource }
+            single {
+                @Suppress("USELESS_CAST")
+                RemindersLocalRepository(get()) as ReminderDataSource
+            }
             single { LocalDB.createRemindersDao(appContext) }
         }
         //declare a new koin module
@@ -88,12 +111,68 @@ class RemindersActivityTest :
         }
     }
 
-    @Test
-    fun test1() {
-        // Blah blah
+    private fun waitFor(delay: Long): ViewAction {
+        return object : ViewAction {
+            override fun getConstraints(): Matcher<View> {
+                return isRoot()
+            }
+
+            override fun getDescription(): String {
+                return "wait for " + delay + "milliseconds"
+            }
+
+            override fun perform(uiController: UiController, view: View?) {
+                uiController.loopMainThreadForAtLeast(delay)
+            }
+        }
     }
 
+    @Test
+    fun addNewReminder_emptyErrors() {
+        val scenario = ActivityScenario.launch(RemindersActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(scenario)
 
-//    TODO: add End to End testing to the app
+        onView(withId(R.id.addReminderFAB)).perform(click())
+        onView(withId(R.id.saveReminder)).perform(click())
+
+        onView(withText(R.string.err_enter_title)).check(matches(isDisplayed()))
+        // wait until Snackbar is gone
+        onView(isRoot()).perform(waitFor(3000))
+
+        onView(withId(R.id.reminderTitle)).perform(replaceText("Title"))
+        onView(withId(R.id.saveReminder)).perform(click())
+
+        onView(withText(R.string.err_select_location)).check(matches(isDisplayed()))
+
+        scenario.close()
+    }
+
+    @Test
+    fun addNewReminder_full() {
+        val testTitle: String = "TestTitle"
+        val scenario = ActivityScenario.launch(RemindersActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(scenario)
+
+        onView(withId(R.id.addReminderFAB)).perform(click())
+
+        onView(withId(R.id.reminderTitle)).perform(replaceText(testTitle))
+        onView(withId(R.id.reminderDescription)).perform(replaceText("Description"))
+        onView(withId(R.id.selectLocation)).perform(click())
+
+        onView(withId(R.id.themap)).perform(longClick())
+        onView(withId(R.id.button_save)).perform(click())
+
+        onView(withId(R.id.saveReminder)).perform(click())
+
+
+        onView(withId(R.id.reminderssRecyclerView)).perform(
+            RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
+                ViewMatchers.hasDescendant(withText(testTitle)), click()
+            )
+        )
+
+        scenario.close()
+
+    }
 
 }

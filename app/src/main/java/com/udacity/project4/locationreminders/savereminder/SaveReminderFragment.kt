@@ -34,6 +34,7 @@ class SaveReminderFragment : BaseFragment() {
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSaveReminderBinding
     private lateinit var geofenceClient: GeofencingClient
+    private lateinit var currentItem: ReminderDataItem
 
     private val runningQOrLater =
         android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
@@ -44,7 +45,12 @@ class SaveReminderFragment : BaseFragment() {
         intent.action = ACTION_GEOFENCE_EVENT
         // Use FLAG_UPDATE_CURRENT so that you get the same pending intent back when calling
         // addGeofences() and removeGeofences().
-        PendingIntent.getBroadcast(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        PendingIntent.getBroadcast(
+            requireContext(),
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
     }
 
     override fun onCreateView(
@@ -79,7 +85,8 @@ class SaveReminderFragment : BaseFragment() {
 
             val item = ReminderDataItem(title, description, location, latitude, longitude)
 
-            if (_viewModel.validateAndSaveReminder(item)) {
+            if (_viewModel.validateEnteredData(item)) {
+                currentItem = item
                 if (foregroundAndBackgroundLocationPermissionApproved()) {
                     checkDeviceLocationSettingsAndStartGeofence(item)
                 } else {
@@ -226,6 +233,7 @@ class SaveReminderFragment : BaseFragment() {
         geofenceClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
             addOnSuccessListener {
                 // Geofences added.
+                _viewModel.validateAndSaveReminder(currentItem)
 
                 Timber.e("Add Geofence", geofence.requestId)
             }

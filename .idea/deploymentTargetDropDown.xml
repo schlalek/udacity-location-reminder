@@ -2,19 +2,19 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="RemindersLocalRepositoryTest">
+        <State />
+      </entry>
+      <entry key="addNewReminder_empty()">
+        <State />
+      </entry>
+      <entry key="addNewReminder_emptyErrors()">
+        <State />
+      </entry>
+      <entry key="addNewReminder_full()">
+        <State />
+      </entry>
       <entry key="app">
-        <State />
-      </entry>
-      <entry key="checkDisplayedData()">
-        <State />
-      </entry>
-      <entry key="navigateToSaveReminderFragment()">
-        <State />
-      </entry>
-      <entry key="showNoData()">
-        <State />
-      </entry>
-      <entry key="test1() (1)">
         <State />
       </entry>
     </value>
