@@ -31,6 +31,7 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
         private const val JOB_ID = 573
 
         fun enqueueWork(context: Context, intent: Intent) {
+            Timber.i("Enqueue Work")
             enqueueWork(
                 context,
                 GeofenceTransitionsJobIntentService::class.java, JOB_ID,
@@ -40,6 +41,7 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
     }
 
     override fun onHandleWork(intent: Intent) {
+        Timber.i("onHandleWork")
         if (intent.action == ACTION_GEOFENCE_EVENT) {
             val geofencingEvent = GeofencingEvent.fromIntent(intent) ?: return
 

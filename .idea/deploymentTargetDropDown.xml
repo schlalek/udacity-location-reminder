@@ -2,10 +2,7 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="RemindersLocalRepositoryTest">
-        <State />
-      </entry>
-      <entry key="addNewReminder_empty()">
+      <entry key="RemindersActivityTest">
         <State />
       </entry>
       <entry key="addNewReminder_emptyErrors()">
@@ -15,6 +12,9 @@
         <State />
       </entry>
       <entry key="app">
+        <State />
+      </entry>
+      <entry key="getSingleReminder_error()">
         <State />
       </entry>
     </value>

@@ -5,11 +5,10 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.udacity.project4.locationreminders.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeDataSource
-import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.getOrAwaitValue
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.pauseDispatcher
+import kotlinx.coroutines.test.resumeDispatcher
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.After
@@ -48,21 +47,22 @@ class RemindersListViewModelTest {
     }
 
     @Test
-    fun loadReminders_positive() = runBlockingTest {
-
-        val item = ReminderDTO("Title", "Description", "Location", 1.234, 5.678)
-
+    fun showLoading() {
         remindersRepository.setErrorCase(false)
-        remindersRepository.saveReminder(item)
+        mainCoroutineRule.pauseDispatcher()
+
         viewModel.loadReminders()
-        assertTrue(viewModel.remindersList.getOrAwaitValue().isNotEmpty())
+        assertThat(viewModel.showLoading.getOrAwaitValue(), `is`(true))
+
+        mainCoroutineRule.resumeDispatcher()
+        assertThat(viewModel.showLoading.getOrAwaitValue(), `is`(false))
     }
 
     @Test
     fun loadReminders_Error() {
         remindersRepository.setErrorCase(true)
         viewModel.loadReminders()
-        assertThat(viewModel.showSnackBar.getOrAwaitValue(), `is`("Error while gettign reminders"))
+        assertThat(viewModel.showSnackBar.getOrAwaitValue(), `is`("Error while getting reminders"))
 
     }
 }

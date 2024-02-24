@@ -13,6 +13,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -182,10 +183,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         return (ContextCompat.checkSelfPermission(
             requireActivity(),
             Manifest.permission.ACCESS_FINE_LOCATION
-        ) === PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(
+        ) == PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(
             requireActivity(),
             Manifest.permission.ACCESS_COARSE_LOCATION
-        ) === PackageManager.PERMISSION_GRANTED)
+        ) == PackageManager.PERMISSION_GRANTED)
     }
 
     // Checks if users have given their location and sets location enabled if so.
@@ -206,8 +207,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                     }
                 }
         } else {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
+            requestPermissions(
                 arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_LOCATION_PERMISSION
             )
@@ -222,12 +222,36 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         // Check if location permissions are granted and if so enable the
         // location data layer.
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            if (grantResults.size > 0 && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 enableMyLocation()
+            } else {
+                showPermissionRationale()
             }
+        }
+    }
+
+    private fun showPermissionRationale() {
+        if (
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                requireActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        ) {
+            AlertDialog.Builder(requireActivity())
+                .setTitle(R.string.location_required_error)
+                .setMessage(R.string.permission_denied_explanation)
+                .setPositiveButton("OK") { _, _ ->
+                    enableMyLocation()
+                }
+                .create()
+                .show()
+
+        } else {
+            enableMyLocation()
         }
     }
 }

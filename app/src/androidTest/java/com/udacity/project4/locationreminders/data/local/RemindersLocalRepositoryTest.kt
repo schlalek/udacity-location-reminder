@@ -48,6 +48,18 @@ class RemindersLocalRepositoryTest {
     fun closeDb() = database.close()
 
     @Test
+    fun getSingleReminder_error() = runBlocking {
+        repository.deleteAllReminders()
+
+        val result = repository.getReminder("missing_id")
+
+        assertThat(result is Result.Error, `is`(true))
+        val resError = result as Result.Error
+
+        assertThat(resError.message, `is`("Reminder not found!"))
+    }
+
+    @Test
     fun getSingleReminder() = runBlocking {
         val item = ReminderDTO("Shopping", "Lets get groceries", "Walmart", 1.234, 5.678)
 

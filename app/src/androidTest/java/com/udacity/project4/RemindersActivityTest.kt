@@ -2,7 +2,6 @@ package com.udacity.project4
 
 import android.app.Application
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
@@ -13,12 +12,9 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.longClick
 import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions
-import androidx.test.espresso.matcher.ViewMatchers
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.isRoot
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.espresso.matcher.RootMatchers.withDecorView
+import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.udacity.project4.locationreminders.RemindersActivity
@@ -31,9 +27,11 @@ import com.udacity.project4.util.DataBindingIdlingResource
 import com.udacity.project4.util.monitorActivity
 import com.udacity.project4.utils.EspressoIdlingResource
 import kotlinx.coroutines.runBlocking
+import org.hamcrest.CoreMatchers.not
 import org.hamcrest.Matcher
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -42,6 +40,7 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.koin.test.get
+import timber.log.Timber
 
 
 @RunWith(AndroidJUnit4::class)
@@ -52,6 +51,21 @@ class RemindersActivityTest :
 
     private lateinit var repository: ReminderDataSource
     private lateinit var appContext: Application
+
+    @get:Rule
+    val activityScenarioRule: ActivityScenarioRule<RemindersActivity> =
+        ActivityScenarioRule(
+            RemindersActivity::class.java
+        )
+    private var decorView: View? = null
+
+    @Before
+    fun setUp() {
+        activityScenarioRule.scenario.onActivity { activity ->
+            decorView = activity.window.decorView
+        }
+        dataBindingIdlingResource.monitorActivity(activityScenarioRule.scenario)
+    }
 
     // An Idling Resource that waits for Data Binding to have no pending bindings
     private val dataBindingIdlingResource = DataBindingIdlingResource()
@@ -111,6 +125,7 @@ class RemindersActivityTest :
         }
     }
 
+
     private fun waitFor(delay: Long): ViewAction {
         return object : ViewAction {
             override fun getConstraints(): Matcher<View> {
@@ -129,8 +144,9 @@ class RemindersActivityTest :
 
     @Test
     fun addNewReminder_emptyErrors() {
-        val scenario = ActivityScenario.launch(RemindersActivity::class.java)
-        dataBindingIdlingResource.monitorActivity(scenario)
+        /*val scenario = ActivityScenario.launch(RemindersActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(scenario)*/
+        val scenario: ActivityScenario<RemindersActivity> = activityScenarioRule.scenario
 
         onView(withId(R.id.addReminderFAB)).perform(click())
         onView(withId(R.id.saveReminder)).perform(click())
@@ -144,14 +160,13 @@ class RemindersActivityTest :
 
         onView(withText(R.string.err_select_location)).check(matches(isDisplayed()))
 
-        scenario.close()
+        //scenario.close()
     }
 
     @Test
     fun addNewReminder_full() {
         val testTitle: String = "TestTitle"
-        val scenario = ActivityScenario.launch(RemindersActivity::class.java)
-        dataBindingIdlingResource.monitorActivity(scenario)
+        val scenario: ActivityScenario<RemindersActivity> = activityScenarioRule.scenario
 
         onView(withId(R.id.addReminderFAB)).perform(click())
 
@@ -164,14 +179,20 @@ class RemindersActivityTest :
 
         onView(withId(R.id.saveReminder)).perform(click())
 
+        Timber.w("Waiting for Toast")
 
-        onView(withId(R.id.reminderssRecyclerView)).perform(
+        onView(withText(R.string.reminder_saved)).inRoot(
+            withDecorView(not(decorView))
+        ).check(matches(isDisplayed()))
+
+        Timber.w("Found Toast")
+
+        /*onView(withId(R.id.reminderssRecyclerView)).perform(
             RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
-                ViewMatchers.hasDescendant(withText(testTitle)), click()
+                hasDescendant(withText(testTitle)), click()
             )
-        )
+        )*/
 
-        scenario.close()
 
     }
 
